@@ -2,198 +2,810 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>El Gran Reto: Día 1 🐱🚀</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GatoGiro & Aguacate Adventure - Super Animado</title>
     <style>
-        body {
-            background-color: #ffe5ec;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; color: #ff4d6d; overflow: hidden;
-            user-select: none; -webkit-user-select: none;
+        :root {
+            --bg-color: #fcf6ec;
+            --pastry-dark: #6e473b;
+            --pastry-light: #e0a96d;
+            --gold: #d97706;
         }
 
-        /* SISTEMA DE 3 PESTAÑAS ADAPTADO A MÓVIL */
-        .overlay-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffe5ec; display: flex; justify-content: center; align-items: center;
-            z-index: 100; transition: opacity 0.4s, visibility 0.4s;
-        }
-        .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        
-        .card {
-            background: white; padding: 25px; border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.25);
-            border: 4px solid #ffb3c1; text-align: center; max-width: 400px; width: 85%;
+        * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none; /* Bloquea selección de texto en iPhone */
+            touch-action: manipulation; /* Elimina el retraso por doble toque y bloquea el zoom */
         }
-        .card h2 { color: #ff4d6d; margin-top: 0; font-size: 1.5rem; }
-        .card p { color: #4a4a4a; font-size: 0.95rem; line-height: 1.5; margin: 12px 0; }
-        .center-text { text-align: center; }
-        .highlight { color: #ff4d6d; font-weight: bold; }
-        
-        ul { text-align: left; color: #4a4a4a; line-height: 1.4; margin: 10px 0 15px 0; padding-left: 20px; font-size: 0.9rem; }
-        ul li { margin-bottom: 5px; }
 
-        /* ESCENARIO JUEGO */
-        #game-stage { display: none; flex-direction: column; align-items: center; width: 100%; }
-        #canvas-container { position: relative; width: 320px; height: 480px; }
-        canvas { border: 4px solid #ff758f; background-color: #fff0f3; border-radius: 15px; display: block; }
-        #score-display { font-size: 1.4rem; font-weight: bold; margin-bottom: 10px; text-shadow: 1px 1px white; }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Arial Round', 'Comic Sans MS', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--pastry-dark);
+            transition: background 1s ease;
+        }
+
+        /* Cambios dinámicos de fondo para la sección final de la carta */
+        body.carta-activa {
+            background-color: #ffe6e6 !important;
+            font-family: 'Courier New', Courier, monospace !important;
+        }
+
+        body.celebracion {
+            background-color: #0d1b2a !important;
+        }
+
+        /* Contenedor Cómic/Ventanas (Juego 1) */
+        #comic-container {
+            display: flex;
+            gap: 20px;
+            width: 950px;
+            max-width: 95vw; /* Adaptado para pantallas móviles */
+            height: 380px;
+            margin-bottom: 30px;
+            transition: opacity 0.5s ease;
+        }
+
+        .game-window {
+            width: 50%;
+            height: 100%;
+            border: 5px solid var(--pastry-dark);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 0 var(--pastry-dark);
+            transition: all 0.5s ease;
+        }
+
+        #level1-window { background: linear-gradient(to bottom, #bae6fd, #fef08a); }
+        #level2-window { background: linear-gradient(to bottom, #bbf7d0, #fef08a); opacity: 0.3; filter: grayscale(90%); }
+        #level2-window.active { opacity: 1; filter: grayscale(0%); border-color: #16a34a; box-shadow: 0 8px 0 #16a34a; }
+
+        .comic-title {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 14px; /* Un poco más pequeña para pantallas estrechas */
+            font-weight: 900;
+            text-transform: uppercase;
+            -webkit-text-stroke: 1px #fff;
+            z-index: 10;
+        }
+
+        .scenery { position: absolute; bottom: 0; width: 100%; height: 100px; border-top: 6px solid var(--pastry-dark); }
+        .level1-floor { background: #edd1b0; background-image: radial-gradient(circle at 20% 100%, #d9a05b 20%, #edd1b0 21%); background-size: 40px 40px; }
+        .level2-floor { background: #bbf7d0; background-image: radial-gradient(circle at 20% 100%, #86efac 20%, #bbf7d0 21%); background-size: 40px 40px; border-top-color: #16a34a; }
+
+        .bg-cat, .bg-cloud { position: absolute; font-size: 24px; opacity: 0.25; animation: drift linear infinite; }
+        .bg-cloud { font-size: 30px; opacity: 0.4; }
+        @keyframes drift { from { left: 100%; } to { left: -60px; } }
+
+        .actor { position: absolute; bottom: 95px; font-size: 45px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; z-index: 5; }
+        #cat-hero-l1 { left: 50px; }
+        #cat-hero-l2 { left: 50px; display: none; }
+
+        #cat-hero-l1::before, #cat-hero-l2::before { content: '💗'; position: absolute; top: -24px; font-size: 20px; animation: pulse 0.6s ease-in-out infinite alternate; }
+        #cat-hero-l2::before { content: '💙'; }
+        @keyframes pulse { from { transform: scale(0.9); } to { transform: scale(1.1); } }
+
+        .jumping { animation: jumpCSS 0.85s cubic-bezier(0.1, 0.8, 0.3, 1); }
+        @keyframes jumpCSS { 0% { bottom: 95px; } 40% { bottom: 270px; } 60% { bottom: 270px; } 100% { bottom: 95px; } }
+
+        .obstacle { position: absolute; bottom: 95px; font-size: 35px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+
+        .speech-bubble { position: absolute; bottom: 160px; left: 35px; background: white; padding: 5px 10px; border: 3px solid var(--pastry-dark); border-radius: 10px; font-size: 11px; font-weight: bold; z-index: 10; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -10px; left: 20px; border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
+
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(252, 246, 236, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; padding: 20px; }
+        .play-btn { background-color: #ea580c; color: white; border: 4px solid var(--pastry-dark); padding: 12px 35px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 var(--pastry-dark); margin-top: 15px; transition: transform 0.2s; }
+        .play-btn:hover { transform: scale(1.05); }
+
+        /* BARRA DE CARGA INFERIOR */
+        #loading-zone { display: flex; flex-direction: column; align-items: center; width: 750px; max-width: 90vw; transition: opacity 0.5s ease; }
+        #loading-text { font-size: 24px; font-weight: 900; margin-bottom: 12px; letter-spacing: 2px; }
+        #bar-wrapper { position: relative; width: 100%; height: 48px; background: #ffedd5; border: 5px solid var(--pastry-dark); border-radius: 50px; padding: 2px; display: flex; align-items: center; }
+        #progress-fill { height: 100%; width: 0%; background: repeating-linear-gradient(45deg, #f59e0b, #f59e0b 15px, #d97706 15px, #d97706 30px); border-radius: 50px; transition: width 0.15s ease-out; display: flex; align-items: center; overflow: hidden; white-space: nowrap; padding-left: 10px; }
+        .bar-items { font-size: 18px; letter-spacing: 3px; }
+        #fusion-avatar { position: absolute; left: 0%; top: -42px; font-size: 65px; transform: translateX(-35px); transition: left 0.15s ease-out; z-index: 200; pointer-events: none; display: none; }
+        .decor-paw { font-size: 24px; position: absolute; }
+        .paw-left { left: -35px; top: 5px; }
+        .paw-right { right: -35px; top: 5px; }
+
+        /* PANTALLA REGALO */
+        #gift-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, #fce7f3, #fbcfe8);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #gift-title { font-size: 32px; font-weight: 900; color: #db2777; margin-bottom: 10px; text-shadow: 2px 2px white; }
+        #gift-subtitle { font-size: 18px; color: #be185d; margin-bottom: 30px; }
         
-        #game-over-screen {
-            display: none; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.98);
-            border: 4px solid #ff4d6d; border-radius: 20px; padding: 20px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 80%;
+        #gift-box {
+            font-size: 120px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            animation: giftWobble 1.2s ease infinite alternate;
+        }
+        #gift-box:hover { transform: scale(1.15); }
+
+        @keyframes giftWobble {
+            0% { transform: translateY(0) rotate(-4deg) scale(1); }
+            50% { transform: translateY(-10px) rotate(4deg) scale(1.05); }
+            100% { transform: translateY(0) rotate(-4deg) scale(1); }
+        }
+
+        /* ==================== ESTILOS DE LA CARTA ==================== */
+        .contenedor {
+            text-align: center;
+            position: relative;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+            z-index: 5;
+            transition: all 1s ease;
+            display: none; 
+            color: #4a4a4a;
+        }
+
+        .contenedor.celebracion-box {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.6);
+        }
+
+        .contenedor h1 {
+            color: #ff4d6d;
+            font-size: 22px;
+            margin-bottom: 10px;
+            min-height: 40px;
+            line-height: 1.4;
+        }
+
+        .contenedor.celebracion-box h1 {
+            color: #ff1493;
+        }
+
+        #bloque-poema {
+            max-height: 0;
+            opacity: 0;
+            font-size: 16px;
+            font-style: italic;
+            color: #4a4a4a;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            white-space: pre-line;
+            transition: all 1s ease-in-out;
+        }
+
+        #bloque-poema.mostrar {
+            max-height: 100px;
+            opacity: 1;
+        }
+
+        .escena {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+            height: 220px;
+            margin-bottom: 30px;
+            position: relative;
+            width: 100%;
+        }
+
+        .personaje {
+            height: 130px;
+            transition: all 0.5s ease;
+            z-index: 3;
+            flex-shrink: 0;
+        }
+
+        #aguacate {
+            animation: caminar 2.5s forwards ease-in-out;
+        }
+
+        #croissant {
+            opacity: 0;
+            animation: aparecerCroissant 1s 4s forwards;
+        }
+
+        .corazon {
+            position: absolute;
+            width: 35px;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        #corazon-azul {
+            bottom: 65px;
+            left: 22%;
+            animation: flotarCorazonAzul 2s 1.5s forwards;
+        }
+
+        #corazon-rosa {
+            bottom: 45px;
+            right: 22%;
+            animation: flotarCorazonRosa 2s 4s forwards;
+        }
+
+        .botones {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            height: 50px;
+            opacity: 0;
+            animation: aparecerBotones 0.5s 7.5s forwards;
         }
 
         button {
-            background-color: #ff4d6d; color: white; border: none;
-            padding: 12px 24px; font-size: 1rem; border-radius: 12px;
-            cursor: pointer; font-weight: bold; box-shadow: 0 4px #c9184a;
+            padding: 10px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-family: inherit;
         }
-        button:active { transform: translateY(4px); box-shadow: 0 0 #c9184a; }
-        .floating-emoji { font-size: 2rem; display: inline-block; margin-bottom: 5px; }
+
+        #btn-si {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        #btn-si:hover { transform: scale(1.1); }
+
+        #btn-no {
+            background-color: #f44336;
+            color: white;
+            position: relative;
+        }
+
+        .fuegos-container, .lluvia-container {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .cohete {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .elemento-cayendo {
+            position: absolute;
+            top: -50px;
+            font-size: 24px;
+            z-index: 6;
+            pointer-events: none;
+            animation: caerFlotando linear forwards;
+        }
+
+        /* --- ANIMACIONES INICIALES CARTA --- */
+        @keyframes caminar {
+            0% { transform: translateX(-150px) rotate(-5deg); }
+            50% { transform: translateX(-20px) rotate(5deg); }
+            100% { transform: translateX(0px) rotate(0deg); }
+        }
+        @keyframes aparecerCroissant { to { opacity: 1; transform: scale(1); } }
+        @keyframes aparecerBotones { to { opacity: 1; } }
+        @keyframes flotarCorazonAzul {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-20px) scale(1); opacity: 1; }
+        }
+        @keyframes flotarCorazonRosa {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-15px) scale(1); opacity: 1; }
+        }
+
+        /* --- ANIMACIONES CELEBRACIÓN --- */
+        @keyframes latirPersonaje {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.12) translateY(-5px); }
+            100% { transform: scale(1); }
+        }
+        @keyframes flotarCorazonCelebracion {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-25px) scale(1.1); }
+        }
+        @keyframes estallido {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(35); opacity: 0; box-shadow: 0 0 20px 6px currentColor; }
+        }
+        @keyframes caerFlotando {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- PESTAÑA 1: Bienvenida General -->
-    <div id="screen-1" class="overlay-screen">
-        <div class="card">
-            <div class="floating-emoji">✨📜✨</div>
-            <h2>Instrucciones del Reto</h2>
-            <p class="center-text"><span class="highlight">¡Bienvenida!</span> Si estás leyendo esto desde tu móvil, es porque has sido elegida para un desafío diseñado exclusivamente para ti.</p>
-            <p>A partir de hoy, tendrás que superar un total de <span class="highlight">5 pruebas exclusivas</span>. Las reglas son estrictas:</p>
-            <ul>
-                <li>Solo puedes realizar <span class="highlight">1 prueba por día</span>.</li>
-                <li>Tú decides qué días completarlas, no hay prisa... pero tampoco te relajes.</li>
-            </ul>
-            <button onclick="nextScreen(1, 2)">Siguiente ➡️</button>
-        </div>
-    </div>
+    <!-- Audio -->
+    <audio id="musica-local" src="Dani Fernández - Solo tienes que avisar (Visual Video) - Dani Fernández (320k).mp3" preload="auto" loop></audio>
 
-    <!-- PESTAÑA 2: Dinámica de reglas cambiantes -->
-    <div id="screen-2" class="overlay-screen hidden">
-        <div class="card">
-            <div class="floating-emoji">⚠️😼⚡</div>
-            <h2>Reglas Cambiantes</h2>
-            <p>Debes saber que las reglas de este reto <span class="highlight">no son fijas</span>. El juego puede cambiar de plataforma o volverse loco de un día para otro sin previo aviso.</p>
-            <p>Al final del quinto día se desvelará el <span class="highlight">verdadero motivo de este juego...</span> si es que tus reflejos te dan para llegar viva hasta ahí, claro. 🤭</p>
-            <button onclick="nextScreen(2, 3)">Aceptar términos 📝</button>
-        </div>
-    </div>
+    <!-- Contenedores de efectos especiales -->
+    <div class="fuegos-container" id="fuegos"></div>
+    <div class="lluvia-container" id="lluvia"></div>
 
-    <!-- PESTAÑA 3: El reto de hoy -->
-    <div id="screen-3" class="overlay-screen hidden">
-        <div class="card">
-            <div class="floating-emoji">🐱🥐🩵</div>
-            <h2>Día 1/5 ✨</h2>
-            <p>Hoy jugamos desde el móvil. Controlas a un minino volador. Cada vez que <span class="highlight">toques la pantalla</span>, dará un impulso hacia arriba.</p>
-            <p>Esquiva las columnas de cruasanes. Recuerda: <span class="highlight">yo soy una ganadora</span> y solo me junto con ganadoras. Tienes que llegar a <span class="highlight">15 puntos</span>.</p>
-            <button onclick="startGame()">Aceptar el Reto 💖</button>
-        </div>
-    </div>
-
-    <!-- JUEGO -->
-    <div id="game-stage">
-        <div id="score-display">Puntos: <span id="score">0</span> / 15</div>
-        <div id="canvas-container">
-            <canvas id="gameCanvas" width="320" height="480"></canvas>
-            
-            <div id="game-over-screen">
-                <h2 id="go-title">Fin del juego 😿</h2>
-                <p id="go-msg"></p>
-                <div id="go-action"></div>
+    <!-- ELEMENTOS DEL PRIMER JUEGO (FLAPPY CAT) -->
+    <div id="comic-container">
+        <div id="level1-window" class="game-window">
+            <div class="comic-title" id="l1-title">NIVEL 1: CROISSANTS (0/9) 🥐</div>
+            <div class="speech-bubble" id="bubble-l1">¡TOCA AQUÍ!</div>
+            <div id="cat-hero-l1" class="actor">🐱</div>
+            <div class="scenery level1-floor"></div>
+            <div class="overlay" id="start-overlay">
+                <h2>🐾 Gatito Loader Game 🐾</h2>
+                <p style="margin-top: 5px; color: #b45309; font-weight: bold;">✨ MODO ULTRA FÁCIL ✨</p>
+                <p style="font-size: 14px; margin-top: 5px; color: #6e473b; padding: 0 10px;">Completa los 9 croissants y los 6 aguacates tocando la pantalla.</p>
+                <button class="play-btn" onclick="startCoreGame()">¡JUGAR!</button>
             </div>
+        </div>
+
+        <div id="level2-window" class="game-window">
+            <div class="comic-title" id="l2-title">NIVEL 2: AGUACATES (0/6) 🔒</div>
+            <div class="speech-bubble" id="bubble-l2" style="display:none;">¡TOCA AQUÍ!</div>
+            <div id="cat-hero-l2" class="actor">🐱</div>
+            <div class="scenery level2-floor"></div>
+        </div>
+    </div>
+
+    <div id="loading-zone">
+        <div id="loading-text">LOADING... <span id="percentage">0%</span></div>
+        <div id="bar-wrapper">
+            <span class="decor-paw paw-left">🐾</span>
+            <div id="progress-fill">
+                <span class="bar-items">💗🥐💙🥑💗🥐💙🥑💗🥐💙🥑💗🥐💙🥑💗🥐💙🥑</span>
+            </div>
+            <div id="fusion-avatar">🐱</div>
+            <span class="decor-paw paw-right">🐾</span>
+        </div>
+    </div>
+
+    <!-- PANTALLA INTERMEDIA DEL REGALO -->
+    <div id="gift-screen">
+        <h1 id="gift-title">¡ERES UNA GANADORA! 🎉</h1>
+        <p id="gift-subtitle">Y aquí tienes tu premio... ¡Haz click en el regalo para abrirlo!</p>
+        <div id="gift-box" onclick="openGift()">🎁</div>
+    </div>
+
+
+    <!-- ==================== CONTENEDOR DE LA CARTA ==================== -->
+    <div class="contenedor" id="tarjeta">
+        <h1 id="texto-pantalla">...</h1>
+        
+        <div id="bloque-poema"></div>
+
+        <div class="escena">
+            <svg id="aguacate" class="personaje" viewBox="0 0 100 130">
+                <ellipse cx="50" cy="75" rx="35" ry="45" fill="#3a5f43" />
+                <ellipse cx="50" cy="75" rx="28" ry="38" fill="#a3d9c9" />
+                <ellipse cx="50" cy="75" rx="24" ry="34" fill="#d8f3b8" />
+                <g transform="translate(28, 55)">
+                    <ellipse cx="22" cy="22" rx="17" ry="17" fill="#8d745f" />
+                    <ellipse cx="14" cy="18" rx="4" ry="4" fill="#000" />
+                    <ellipse cx="13" cy="17" rx="1.5" ry="1.5" fill="#fff" />
+                    <ellipse cx="30" cy="18" rx="4" ry="4" fill="#000" />
+                    <ellipse cx="29" cy="17" rx="1.5" ry="1.5" fill="#fff" />
+                    <polygon points="21,23 23,23 22,25" fill="#ffb3c1" />
+                    <path d="M 19 27 Q 22 29 25 27" stroke="black" stroke-width="1" fill="none"/>
+                </g>
+                <ellipse cx="35" cy="120" rx="8" ry="6" fill="#8d745f" />
+                <ellipse cx="65" cy="120" rx="8" ry="6" fill="#8d745f" />
+                <ellipse cx="20" cy="80" rx="6" ry="8" fill="#8d745f" />
+                <ellipse cx="80" cy="80" rx="6" ry="8" fill="#8d745f" />
+            </svg>
+
+            <svg id="corazon-azul" class="corazon" viewBox="0 0 32 32">
+                <path d="M16,28.22 C16,28.22 3,20.19 3,11.54 C3,6.2 7.14,3 11.6,3 C14.28,3 15.39,4.41 16,5.1 C16.61,4.41 17.72,3 20.4,3 C24.86,3 29,6.2 29,11.54 C29,20.19 16,28.22 16,28.22 Z" fill="#7cc6ff"/>
+            </svg>
+
+            <svg id="corazon-rosa" class="corazon" viewBox="0 0 32 32">
+                <path d="M16,28.22 C16,28.22 3,20.19 3,11.54 C3,6.2 7.14,3 11.6,3 C14.28,3 15.39,4.41 16,5.1 C16.61,4.41 17.72,3 20.4,3 C24.86,3 29,6.2 29,11.54 C29,20.19 16,28.22 16,28.22 Z" fill="#ff65a3"/>
+            </svg>
+
+            <svg id="croissant" class="personaje" viewBox="0 0 140 120">
+                <path d="M 20 70 Q 10 40 40 30 Q 70 20 100 40 Q 130 60 110 80 Q 70 90 20 70 Z" fill="#df8636" />
+                <path d="M 35 65 Q 25 45 45 38 Q 65 30 85 45 Q 105 60 95 75 Z" fill="#f4a261" />
+                <path d="M 45 35 Q 50 60 40 75" stroke="#b05b1b" stroke-width="3" fill="none" />
+                <path d="M 70 28 Q 75 60 65 82" stroke="#b05b1b" stroke-width="3" fill="none" />
+                <path d="M 95 38 Q 95 65 85 80" stroke="#b05b1b" stroke-width="3" fill="none" />
+                <g transform="translate(45, 35)">
+                    <ellipse cx="20" cy="20" rx="15" ry="15" fill="#b09a85" />
+                    <ellipse cx="13" cy="18" rx="3.5" ry="3.5" fill="#000" />
+                    <ellipse cx="12" cy="17" rx="1" ry="1" fill="#fff" />
+                    <ellipse cx="27" cy="18" rx="3.5" ry="3.5" fill="#000" />
+                    <ellipse cx="26" cy="17" rx="1" ry="1" fill="#fff" />
+                    <polygon points="19,23 21,23 20,24" fill="#ffb3c1" />
+                </g>
+                <ellipse cx="55" cy="85" rx="6" ry="8" fill="#b09a85" />
+                <ellipse cx="75" cy="85" rx="6" ry="8" fill="#b09a85" />
+            </svg>
+        </div>
+
+        <div class="botones" id="bloque-botones">
+            <button id="btn-si" onclick="aceptar()">Sí</button>
+            <button id="btn-no" onmouseover="moverBotonNo()" onclick="moverBotonNo()">No</button>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        // Variables del juego
+        const catHeroL1 = document.getElementById('cat-hero-l1');
+        const catHeroL2 = document.getElementById('cat-hero-l2');
+        const level1Window = document.getElementById('level1-window');
+        const level2Window = document.getElementById('level2-window');
+        const l1Title = document.getElementById('l1-title');
+        const l2Title = document.getElementById('l2-title');
+        const bubbleL1 = document.getElementById('bubble-l1');
+        const bubbleL2 = document.getElementById('bubble-l2');
+        const startOverlay = document.getElementById('start-overlay');
+        const comicContainer = document.getElementById('comic-container');
+        const loadingZone = document.getElementById('loading-zone');
         
-        let bird = { x: 50, y: 150, vy: 0, radius: 14, gravity: 0.3, jump: -5.5 };
-        let pipes = [];
-        let score = 0;
-        let gameRunning = false;
-        let frame = 0;
+        const progressFill = document.getElementById('progress-fill');
+        const percentageTxt = document.getElementById('percentage');
+        const fusionAvatar = document.getElementById('fusion-avatar');
+        const giftScreen = document.getElementById('gift-screen');
 
-        function nextScreen(from, to) {
-            document.getElementById(`screen-${from}`).classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById(`screen-${from}`).style.display = 'none';
-                document.getElementById(`screen-${to}`).classList.remove('hidden');
-            }, 400);
-        }
+        // Variables de la carta
+        const tarjeta = document.getElementById('tarjeta');
+        const textoPantalla = document.getElementById('texto-pantalla');
+        const bloquePoema = document.getElementById('bloque-poema');
+        const bloqueBotones = document.getElementById('bloque-botones');
+        const btnNo = document.getElementById('btn-no');
+        const corazonRosa = document.getElementById('corazon-rosa');
+        const corazonAzul = document.getElementById('corazon-azul');
+        const aguacate = document.getElementById('aguacate');
+        const croissant = document.getElementById('croissant');
+        const audioLocal = document.getElementById('musica-local');
 
-        function startGame() {
-            document.getElementById('screen-3').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('screen-3').style.display = 'none';
-                document.getElementById('game-stage').style.display = 'flex';
-                resetGame();
-            }, 400);
-        }
+        let gameActive = false;
+        let currentLevel = 1;
+        let scoreL1 = 0;
+        let scoreL2 = 0;
+        let progress = 0;
+        
+        let obstacles = [];
+        let loopInterval;
+        let obstacleTimeout;
+        let decorationInterval;
+        let cloudInterval;
 
-        function resetGame() {
-            bird.y = 150; bird.vy = 0; pipes = []; score = 0; frame = 0;
-            document.getElementById('score').innerText = score;
-            document.getElementById('game-over-screen').style.display = 'none';
-            gameRunning = true;
-            loop();
-        }
+        const GOAL_L1 = 9;
+        const GOAL_L2 = 6;
 
-        window.addEventListener('touchstart', (e) => { if(gameRunning) { bird.vy = bird.jump; e.preventDefault(); } });
-        window.addEventListener('mousedown', () => { if(gameRunning) bird.vy = bird.jump; });
-
-        function spawnPipe() {
-            let gap = 125; let minH = 40; let maxH = canvas.height - gap - minH;
-            let h = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
-            pipes.push({ x: canvas.width, top: h, bottom: canvas.height - h - gap, passed: false });
-        }
-
-        function loop() {
-            if(!gameRunning) return;
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            bird.vy += bird.gravity; bird.y += bird.vy;
-            
-            ctx.font = "26px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText("🐱", bird.x, bird.y);
-
-            if(bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) gameOver();
-            if(frame % 90 === 0) spawnPipe();
-            frame++;
-
-            pipes.forEach((p, i) => {
-                p.x -= 2.2;
-                ctx.font = "24px Arial";
-                for(let y=0; y<p.top; y+=25) ctx.fillText("🥐", p.x, y+15);
-                for(let y=canvas.height-p.bottom; y<canvas.height; y+=25) ctx.fillText("🥐", p.x, y+15);
-
-                if(bird.x + bird.radius > p.x - 12 && bird.x - bird.radius < p.x + 12) {
-                    if(bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) gameOver();
+        // Soporte teclado (PC) y toques (Móvil)
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!gameActive && startOverlay.style.display !== 'none') {
+                    startCoreGame();
+                } else {
+                    triggerJumpAction();
                 }
-                if(!p.passed && p.x < bird.x) { p.passed = true; score++; document.getElementById('score').innerText = score; }
-                if(p.x < -30) pipes.splice(i, 1);
-            });
-            requestAnimationFrame(loop);
+            }
+        });
+
+        level1Window.addEventListener('touchstart', (e) => { e.preventDefault(); if (currentLevel === 1) triggerJumpAction(); }, {passive: false});
+        level2Window.addEventListener('touchstart', (e) => { e.preventDefault(); if (currentLevel === 2) triggerJumpAction(); }, {passive: false});
+        level1Window.addEventListener('click', () => { if (currentLevel === 1) triggerJumpAction(); });
+        level2Window.addEventListener('click', () => { if (currentLevel === 2) triggerJumpAction(); });
+
+        function triggerJumpAction() {
+            if (!gameActive) return;
+            if (currentLevel === 1) {
+                if (!catHeroL1.classList.contains('jumping')) {
+                    catHeroL1.classList.add('jumping');
+                    bubbleL1.style.display = 'none';
+                    setTimeout(() => catHeroL1.classList.remove('jumping'), 850);
+                }
+            } else if (currentLevel === 2) {
+                if (!catHeroL2.classList.contains('jumping')) {
+                    catHeroL2.classList.add('jumping');
+                    bubbleL2.style.display = 'none';
+                    setTimeout(() => catHeroL2.classList.remove('jumping'), 850);
+                }
+            }
+        }
+
+        function startCoreGame() {
+            startOverlay.style.display = 'none';
+            giftScreen.style.display = 'none';
+            tarjeta.style.display = 'none';
+            comicContainer.style.opacity = '1';
+            loadingZone.style.opacity = '1';
+            
+            gameActive = true;
+            progress = 0;
+            currentLevel = 1;
+            scoreL1 = 0;
+            scoreL2 = 0;
+            
+            l1Title.textContent = `NIVEL 1: 🥐 (${scoreL1}/${GOAL_L1})`;
+            l2Title.textContent = `NIVEL 2: 🥑 (${scoreL2}/${GOAL_L2}) 🔒`;
+            level2Window.classList.remove('active');
+            catHeroL1.style.display = 'flex';
+            catHeroL2.style.display = 'none';
+            progressFill.style.width = '0%';
+            percentageTxt.textContent = '0%';
+
+            decorationInterval = setInterval(createBackgroundDecoration, 1800);
+            cloudInterval = setInterval(createBackgroundCloud, 2500);
+            
+            spawnObstacle();
+            loopInterval = requestAnimationFrame(updateGame);
+            
+            fusionAvatar.textContent = '🐱';
+            fusionAvatar.style.display = 'block';
+            fusionAvatar.style.left = '0%';
+        }
+
+        function spawnObstacle() {
+            if (!gameActive) return;
+            let obs = document.createElement('div');
+            obs.classList.add('obstacle');
+            if (currentLevel === 1) {
+                obs.textContent = '🥐';
+                level1Window.appendChild(obs);
+            } else {
+                obs.textContent = '🥑';
+                level2Window.appendChild(obs);
+            }
+            obs.style.left = '100%';
+            obstacles.push(obs);
+
+            let nextSpawn = Math.random() * (2600 - 1800) + 1800;
+            obstacleTimeout = setTimeout(spawnObstacle, nextSpawn);
+        }
+
+        function createBackgroundDecoration() {
+            if (!gameActive) return;
+            let element = document.createElement('div');
+            element.classList.add('bg-cat');
+            element.textContent = Math.random() > 0.5 ? '🐱' : '🐈';
+            element.style.top = (Math.random() * 40 + 160) + 'px';
+            let speed = Math.random() * (8 - 5) + 5;
+            element.style.animationDuration = speed + 's';
+            
+            let targetWindow = currentLevel === 1 ? level1Window : level2Window;
+            targetWindow.appendChild(element);
+            setTimeout(() => element.remove(), speed * 1000);
+        }
+
+        function createBackgroundCloud() {
+            if (!gameActive) return;
+            let cloud = document.createElement('div');
+            cloud.classList.add('bg-cloud');
+            cloud.textContent = Math.random() > 0.5 ? '☁️' : '✨';
+            cloud.style.top = (Math.random() * 80 + 20) + 'px';
+            let speed = Math.random() * (12 - 8) + 8;
+            cloud.style.animationDuration = speed + 's';
+            
+            let targetWindow = currentLevel === 1 ? level1Window : level2Window;
+            targetWindow.appendChild(cloud);
+            setTimeout(() => cloud.remove(), speed * 1000);
+        }
+
+        function updateGame() {
+            if (!gameActive) return;
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                let currentLeft = parseFloat(window.getComputedStyle(obs).left);
+                
+                if (currentLeft < -40) {
+                    obs.remove();
+                    obstacles.splice(i, 1);
+                    
+                    if (currentLevel === 1) {
+                        scoreL1++;
+                        l1Title.textContent = `NIVEL 1: 🥐 (${scoreL1}/${GOAL_L1})`;
+                        let currentProgress = (scoreL1 / GOAL_L1) * 50;
+                        updateProgressBar(currentProgress);
+
+                        if (scoreL1 >= GOAL_L1) { unlockLevel2(); }
+                    } else {
+                        scoreL2++;
+                        l2Title.textContent = `NIVEL 2: 🥑 (${scoreL2}/${GOAL_L2})`;
+                        let currentProgress = 50 + ((scoreL2 / GOAL_L2) * 50);
+                        updateProgressBar(currentProgress);
+
+                        if (scoreL2 >= GOAL_L2) { triggerGiftArrival(); }
+                    }
+                } else {
+                    obs.style.left = (currentLeft - 3.5) + 'px';
+                    let activeHero = currentLevel === 1 ? catHeroL1 : catHeroL2;
+                    if (checkCollision(activeHero, obs)) {
+                        gameOver();
+                        return;
+                    }
+                }
+            }
+            loopInterval = requestAnimationFrame(updateGame);
+        }
+
+        function checkCollision(player, target) {
+            let p = player.getBoundingClientRect();
+            let t = target.getBoundingClientRect();
+            let paddingX = 22; 
+            let paddingY = 20;
+            return !(p.right - paddingX < t.left || p.left + paddingX > t.right || p.bottom - paddingY < t.top || p.top + paddingY > t.bottom);
+        }
+
+        function updateProgressBar(value) {
+            progress = Math.min(value, 100);
+            percentageTxt.textContent = `${Math.floor(progress)}%`;
+            progressFill.style.width = `${progress}%`;
+            fusionAvatar.style.left = `${progress}%`;
+        }
+
+        function unlockLevel2() {
+            currentLevel = 2;
+            clearTimeout(obstacleTimeout);
+            obstacles.forEach(o => o.remove());
+            obstacles = [];
+            catHeroL1.style.display = 'none';
+
+            level2Window.classList.add('active');
+            l2Title.textContent = `NIVEL 2: 🥑 (${scoreL2}/${GOAL_L2})`;
+            catHeroL2.style.display = 'flex';
+            bubbleL2.style.display = 'block';
+            
+            spawnObstacle();
         }
 
         function gameOver() {
-            gameRunning = false;
-            document.getElementById('game-over-screen').style.display = 'block';
-            if(score >= 15) {
-                document.getElementById('go-title').innerText = "¡Reto Superado! 🎉";
-                document.getElementById('go-msg').innerHTML = "Genial, has conseguido superar el reto del día 1, a partir de mañana cuando te sientas preparada podrás recibir el siguiente.";
-                document.getElementById('go-action').innerHTML = '<button onclick="document.getElementById(\'game-stage\').style.display=\'none\'">Cerrar por hoy 🫡</button>';
-            } else {
-                document.getElementById('go-title').innerText = "¡Miau! Fin del juego 😿";
-                document.getElementById('go-msg').innerHTML = "lástima, mientras seas una perdedora no puedes pasar al siguiente nivel, puedes volver a intentarlo";
-                document.getElementById('go-action').innerHTML = '<button onclick="resetGame()">Intentarlo otra vez</button>';
-            }
+            gameActive = false;
+            clearTimeout(obstacleTimeout);
+            clearInterval(decorationInterval);
+            clearInterval(cloudInterval);
+            cancelAnimationFrame(loopInterval);
+            
+            startOverlay.style.display = 'flex';
+            startOverlay.querySelector('h2').textContent = "¡Chocaste! Inténtalo de nuevo";
+            startOverlay.querySelector('.play-btn').textContent = 'Volver a Jugar';
+            
+            obstacles.forEach(o => o.remove());
+            obstacles = [];
+            catHeroL1.classList.remove('jumping');
+            catHeroL2.classList.remove('jumping');
+            bubbleL1.style.display = 'block';
+            bubbleL2.style.display = 'none';
+        }
+
+        function triggerGiftArrival() {
+            gameActive = false;
+            clearInterval(decorationInterval);
+            clearInterval(cloudInterval);
+            cancelAnimationFrame(loopInterval);
+            clearTimeout(obstacleTimeout);
+
+            comicContainer.style.opacity = '0';
+            loadingZone.style.opacity = '0';
+
+            setTimeout(() => {
+                comicContainer.style.display = 'none';
+                loadingZone.style.display = 'none';
+                giftScreen.style.display = 'flex';
+            }, 500);
+        }
+
+        // ==================== FUNCIONES DE LA CARTA RECOMPENSA ====================
+        function openGift() {
+            giftScreen.style.display = 'none';
+            document.body.classList.add('carta-activa');
+            tarjeta.style.display = 'block';
+
+            setTimeout(() => { textoPantalla.innerText = "Donde estarás...."; }, 500);
+            setTimeout(() => { textoPantalla.innerText = "¡Oh! Aquí te tengo."; }, 4000);
+            setTimeout(() => { textoPantalla.innerText = "¿Bonanita, quieres salir conmigo? 🥑💙🥐❤️"; }, 7500);
+        }
+
+        function moverBotonNo() {
+            const x = Math.random() * 140 - 70;
+            const y = Math.random() * 80 - 40;
+            btnNo.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        function aceptar() {
+            textoPantalla.innerText = "¡Dijo que SÍ AAAAAAAAAAA! 🥑❤️🥐";
+            bloqueBotones.style.display = 'none';
+            
+            audioLocal.currentTime = 52;
+            audioLocal.play().catch(error => { console.log("Error de audio:", error); });
+
+            document.body.classList.add('celebracion');
+            tarjeta.classList.add('celebracion-box');
+            
+            aguacate.style.animation = "none";
+            croissant.style.animation = "none";
+            corazonAzul.style.animation = "none";
+            corazonRosa.style.animation = "none";
+            
+            aguacate.offsetHeight; croissant.offsetHeight; corazonAzul.offsetHeight; corazonRosa.offsetHeight;
+            
+            croissant.style.opacity = "1";
+            corazonAzul.style.opacity = "1";
+            corazonRosa.style.opacity = "1";
+
+            aguacate.style.animation = "latirPersonaje 0.6s infinite ease-in-out";
+            croissant.style.animation = "latirPersonaje 0.6s 0.3s infinite ease-in-out";
+            
+            corazonAzul.style.animation = "flotarCorazonCelebracion 1.2s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite alternate";
+            corazonRosa.style.animation = "flotarCorazonCelebracion 1.2s 0.3s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite alternate";
+
+            activarFuegosArtificiales();
+            lluviaCelebracion();
+
+            setTimeout(() => {
+                bloquePoema.innerText = "En un mundo que va tan rápido,\ntú eres el único sitio\ndonde quiero quedarme";
+                bloquePoema.classList.add('mostrar');
+            }, 4500);
+        }
+
+        function crearFuego() {
+            const contenedor = document.getElementById('fuegos');
+            if (!contenedor) return;
+
+            const cohete = document.createElement('div');
+            cohete.className = 'cohete';
+            const x = Math.random() * 100;
+            const y = Math.random() * 60 + 10;
+            const colores = ['#ff0055', '#00ffcc', '#ffcc00', '#ff00ff', '#00ff00', '#ff5722'];
+            const color = colores[Math.floor(Math.random() * colores.length)];
+            
+            cohete.style.left = `${x}vw`;
+            cohete.style.top = `${y}vh`;
+            cohete.style.color = color;
+            cohete.style.background = color;
+            cohete.style.animation = "estallido 1.2s ease-out forwards";
+            
+            contenedor.appendChild(cohete);
+            setTimeout(() => { cohete.remove(); }, 1200);
+        }
+
+        function activarFuegosArtificiales() { setInterval(crearFuego, 400); }
+
+        function lluviaCelebracion() {
+            const contenedor = document.getElementById('lluvia');
+            const elementos = ['🌷', '🌼', '💖', '💙']; 
+
+            setInterval(() => {
+                const elemento = document.createElement('div');
+                element.className = 'elemento-cayendo';
+                element.innerText = elementos[Math.floor(Math.random() * elementos.length)];
+                element.style.left = `${Math.random() * 100}vw`;
+                element.style.fontSize = `${Math.random() * 15 + 22}px`;
+                element.style.animationDuration = `${Math.random() * 3 + 3.5}s`; 
+                
+                contenedor.appendChild(element);
+                setTimeout(() => { elemento.remove(); }, 6500);
+            }, 180);
         }
     </script>
 </body>
