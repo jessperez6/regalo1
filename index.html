@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Gran Reto: Día 1 🐱🚀</title>
+    <style>
+        body {
+            background-color: #ffe5ec;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; color: #ff4d6d; overflow: hidden;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        /* SISTEMA DE 3 PESTAÑAS ADAPTADO A MÓVIL */
+        .overlay-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffe5ec; display: flex; justify-content: center; align-items: center;
+            z-index: 100; transition: opacity 0.4s, visibility 0.4s;
+        }
+        .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        
+        .card {
+            background: white; padding: 25px; border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.25);
+            border: 4px solid #ffb3c1; text-align: center; max-width: 400px; width: 85%;
+            box-sizing: border-box;
+        }
+        .card h2 { color: #ff4d6d; margin-top: 0; font-size: 1.5rem; }
+        .card p { color: #4a4a4a; font-size: 0.95rem; line-height: 1.5; margin: 12px 0; }
+        .center-text { text-align: center; }
+        .highlight { color: #ff4d6d; font-weight: bold; }
+        
+        ul { text-align: left; color: #4a4a4a; line-height: 1.4; margin: 10px 0 15px 0; padding-left: 20px; font-size: 0.9rem; }
+        ul li { margin-bottom: 5px; }
+
+        /* ESCENARIO JUEGO */
+        #game-stage { display: none; flex-direction: column; align-items: center; width: 100%; }
+        #canvas-container { position: relative; width: 320px; height: 480px; }
+        canvas { border: 4px solid #ff758f; background-color: #fff0f3; border-radius: 15px; display: block; }
+        #score-display { font-size: 1.4rem; font-weight: bold; margin-bottom: 10px; text-shadow: 1px 1px white; }
+        
+        #game-over-screen {
+            display: none; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.98);
+            border: 4px solid #ff4d6d; border-radius: 20px; padding: 20px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 80%;
+        }
+
+        button {
+            background-color: #ff4d6d; color: white; border: none;
+            padding: 12px 24px; font-size: 1rem; border-radius: 12px;
+            cursor: pointer; font-weight: bold; box-shadow: 0 4px #c9184a;
+        }
+        button:active { transform: translateY(4px); box-shadow: 0 0 #c9184a; }
+        .floating-emoji { font-size: 2rem; display: inline-block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- PESTAÑA 1: Bienvenida General -->
+    <div id="screen-1" class="overlay-screen">
+        <div class="card">
+            <div class="floating-emoji">✨📜✨</div>
+            <h2>Instrucciones del Reto</h2>
+            <p class="center-text"><span class="highlight">¡Bienvenida!</span> Si estás leyendo esto desde tu móvil, es porque has sido elegida para un desafío diseñado exclusivamente para ti.</p>
+            <p>A partir de hoy, tendrás que superar un total de <span class="highlight">5 pruebas exclusivas</span>. Las reglas son estrictas:</p>
+            <ul>
+                <li>Solo puedes realizar <span class="highlight">1 prueba por día</span>.</li>
+                <li>Tú decides qué días completarlas, no hay prisa... pero tampoco te relajes.</li>
+            </ul>
+            <button onclick="nextScreen(1, 2)">Siguiente ➡️</button>
+        </div>
+    </div>
+
+    <!-- PESTAÑA 2: Dinámica de reglas cambiantes -->
+    <div id="screen-2" class="overlay-screen hidden">
+        <div class="card">
+            <div class="floating-emoji">⚠️😼⚡</div>
+            <h2>Reglas Cambiantes</h2>
+            <p>Debes saber que las reglas de este reto <span class="highlight">no son fijas</span>. El juego puede cambiar de plataforma o volverse loco de un día para otro sin previo aviso.</p>
+            <p>Al final del quinto día se desvelará el <span class="highlight">verdadero motivo de este juego...</span> si es que tus reflejos te dan para llegar viva hasta ahí, claro. 🤭</p>
+            <button onclick="nextScreen(2, 3)">Aceptar términos 📝</button>
+        </div>
+    </div>
+
+    <!-- PESTAÑA 3: El reto de hoy -->
+    <div id="screen-3" class="overlay-screen hidden">
+        <div class="card">
+            <div class="floating-emoji">🐱🥐🩵</div>
+            <h2>Día 1/5 ✨</h2>
+            <p>Hoy jugamos desde el móvil. Controlas a un minino volador. Cada vez que <span class="highlight">toques la pantalla</span>, dará un impulso hacia arriba.</p>
+            <p>Esquiva las columnas de cruasanes. Recuerda: <span class="highlight">yo soy una ganadora</span> y solo me junto con ganadoras. Tienes que llegar a <span class="highlight">15 puntos</span>.</p>
+            <button onclick="startGame()">Aceptar el Reto 💖</button>
+        </div>
+    </div>
+
+    <!-- JUEGO -->
+    <div id="game-stage">
+        <div id="score-display">Puntos: <span id="score">0</span> / 15</div>
+        <div id="canvas-container">
+            <canvas id="gameCanvas" width="320" height="480"></canvas>
+            
+            <div id="game-over-screen">
+                <h2 id="go-title">Fin del juego 😿</h2>
+                <p id="go-msg"></p>
+                <div id="go-action"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let bird = { x: 50, y: 150, vy: 0, radius: 14, gravity: 0.3, jump: -5.5 };
+        let pipes = [];
+        let score = 0;
+        let gameRunning = false;
+        let frame = 0;
+
+        function nextScreen(from, to) {
+            document.getElementById(`screen-${from}`).classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById(`screen-${from}`).style.display = 'none';
+                document.getElementById(`screen-${to}`).classList.remove('hidden');
+            }, 400);
+        }
+
+        function startGame() {
+            document.getElementById('screen-3').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('screen-3').style.display = 'none';
+                document.getElementById('game-stage').style.display = 'flex';
+                resetGame();
+            }, 400);
+        }
+
+        function resetGame() {
+            bird.y = 150; bird.vy = 0; pipes = []; score = 0; frame = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('game-over-screen').style.display = 'none';
+            gameRunning = true;
+            loop();
+        }
+
+        window.addEventListener('touchstart', (e) => { if(gameRunning) { bird.vy = bird.jump; e.preventDefault(); } });
+        window.addEventListener('mousedown', () => { if(gameRunning) bird.vy = bird.jump; });
+
+        function spawnPipe() {
+            let gap = 125; let minH = 40; let maxH = canvas.height - gap - minH;
+            let h = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+            pipes.push({ x: canvas.width, top: h, bottom: canvas.height - h - gap, passed: false });
+        }
+
+        function loop() {
+            if(!gameRunning) return;
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            bird.vy += bird.gravity; bird.y += bird.vy;
+            
+            ctx.font = "26px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText("🐱", bird.x, bird.y);
+
+            if(bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) gameOver();
+            if(frame % 90 === 0) spawnPipe();
+            frame++;
+
+            pipes.forEach((p, i) => {
+                p.x -= 2.2;
+                ctx.font = "24px Arial";
+                for(let y=0; y<p.top; y+=25) ctx.fillText("🥐", p.x, y+15);
+                for(let y=canvas.height-p.bottom; y<canvas.height; y+=25) ctx.fillText("🥐", p.x, y+15);
+
+                if(bird.x + bird.radius > p.x - 12 && bird.x - bird.radius < p.x + 12) {
+                    if(bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) gameOver();
+                }
+                if(!p.passed && p.x < bird.x) { p.passed = true; score++; document.getElementById('score').innerText = score; }
+                if(p.x < -30) pipes.splice(i, 1);
+            });
+            requestAnimationFrame(loop);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('game-over-screen').style.display = 'block';
+            if(score >= 15) {
+                document.getElementById('go-title').innerText = "¡Reto Superado! 🎉";
+                document.getElementById('go-msg').innerHTML = "Genial, has conseguido superar el reto del día 1, a partir de mañana cuando te sientas preparada podrás recibir el siguiente.";
+                document.getElementById('go-action').innerHTML = '<button onclick="document.getElementById(\'game-stage\').style.display=\'none\'">Cerrar por hoy 🫡</button>';
+            } else {
+                document.getElementById('go-title').innerText = "¡Miau! Fin del juego 😿";
+                document.getElementById('go-msg').innerHTML = "lástima, mientras seas una perdedora no puedes pasar al siguiente nivel, puedes volver a intentarlo";
+                document.getElementById('go-action').innerHTML = '<button onclick="resetGame()">Intentarlo otra vez</button>';
+            }
+        }
+    </script>
+</body>
+</html>
